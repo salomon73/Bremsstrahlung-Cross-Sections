@@ -18,7 +18,8 @@ All figures from the publication can be reproduced from the scripts provided.
 ---
 
 ## Repository Structure
-
+```bash
+.
 ├── LICENSE
 ├── README.md
 │
@@ -29,6 +30,7 @@ All figures from the publication can be reproduced from the scripts provided.
 │   └── MultiYukawaData: Multi-Yukawa parameters for some elements
 │   └── ScriptsForResults: Scripts to produce results
 
+```
 
 
 
