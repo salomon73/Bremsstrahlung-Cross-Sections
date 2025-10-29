@@ -136,7 +136,7 @@ ax = gca;
 i_ref_ind =  1+[0:14:78];
 i_all = 1:79;
 j = setdiff(i_all, i_ref_ind);
-kk = 1;
+kk = 5;
 for i=j
     h = semilogy(dft.ionradius{1,kk}.rn{i},dft.ionradius{1,kk}.dens{i}, '-', 'linewidth', 2,'HandleVisibility','off'); 
     h.Color = [0.8 0.2 0.1 0.2];
@@ -189,7 +189,7 @@ colors = fullMap(idx,:);
 set(ax,'ColorOrder',colors,'NextPlot','add')
 
 for iref = i_ref_ind
-    % Identify a reasonable cutoff radius where density ~ 0
+    % cutoff radius
     idx_cut = find(dft.ionradius{1,kk}.dens{1,iref} < ne_thresh, 1, 'first');
     if isempty(idx_cut)
         r_cut = max(dft.ionradius{1,kk}.rn{1,iref});
@@ -202,13 +202,13 @@ for iref = i_ref_ind
             continue
         end
 
-        % Determine the common mask for the two curves
+        % Common mask for the two curves
         rn_ref = dft.ionradius{1,kk}.rn{1,iref};
         rn_ii  = dft.ionradius{1,kk}.rn{1,ii};
         dens_ref = dft.ionradius{1,kk}.dens{1,iref};
         dens_ii  = dft.ionradius{1,kk}.dens{1,ii};
 
-        % Interpolate the smaller grid onto the larger one
+        % Interpolate smaller grid onto larger one
         if numel(rn_ref) < numel(rn_ii)
             rn_common = rn_ii;
             dens_ref = interp1(rn_ref, dens_ref, rn_common, 'pchip');
@@ -219,16 +219,15 @@ for iref = i_ref_ind
             dens_ref = dens_ref;
         end
 
-        % Mask out the tail region (below threshold)
+        % Mask out below threshold
         mask = (rn_common <= r_cut) & (dens_ref > ne_thresh) & (dens_ii > ne_thresh);
         if nnz(mask) < 2
             continue
         end
 
-        % Find intersections between reference and current curve
+        % Find intersections 
         [r0, ~] = intersections(rn_common(mask), dens_ref(mask), rn_common(mask), dens_ii(mask));
 
-        % Keep only physically meaningful intersections (below cutoff)
         r0_valid = r0(r0 <= r_cut);
 
         if ~isempty(r0_valid)
@@ -237,7 +236,7 @@ for iref = i_ref_ind
         end
     end
 
-    % Plot the physically relevant (outermost) intersection
+    % Plot outermost intersection
     plot(dft.Z0, re_max(iref, :), 'o','MarkerEdgeColor', [0.1,0.1,0.1], ...
        'MarkerFaceColor', colors(find(i_ref_ind==iref),:), ...
        'MarkerSize', 8, 'linewidth', 1, 'displayname',['$Z_{s^{\prime}}=$',num2str(iref-1)])
