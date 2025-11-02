@@ -93,7 +93,7 @@ for ind=1:numel(ind_exp)
          warning('ntheta increased to %d to satisfy Simpson''s rule requirement.', ntheta);
         end
     end
-    flag_mem = 1;                 % Memory management enforcement : 0 -> 5-D block numerical calculations, 1 -> 4-D block numerical calculations 
+    flag_mem = 1; % Memory management enforcement : 0 -> 5-D block numerical calculations, 1 -> 4-D block numerical calculations 
     if exist('flag_mem', 'var') 
         params.flag_mem = flag_mem; 
     end 
@@ -172,16 +172,33 @@ for ind=1:numel(ind_exp)
             %
             semilogy(k_in/1000, 10^(n_arr(theta_ind)).*squeeze(cs_Total(theta_ind,:)) * 1e4 / 0.511, 'k--', 'DisplayName', 'Total', 'linewidth', 2);
 
-                [xp, idx] = sort(sigma{theta_ind}(:,1)); 
-                yp = sigma{theta_ind}(idx, 2);
-                [stat_err, syst_err] = errors_cross_sec(E0/1000, xp, yp);
-                h_fill =  fill([xp; flipud(xp)], [yp + syst_err; flipud(yp - syst_err)], ...
-                    [0.8 0.8 0.8], 'EdgeColor', 'none', 'FaceAlpha', 0.5, ...
-                    'HandleVisibility', 'off');
-                hold on 
-                h = errorbar(xp, yp, stat_err, 'ko', 'MarkerFaceColor', 'w', ...
-                    'LineWidth', 1.2, 'MarkerSize', 12, ...
-                    'HandleVisibility', 'off');
+
+                [xp, idx] = sort(expdatas.sigma{ii}(:,1)); 
+                 yp = expdatas.sigma{ii}(idx, 2);
+                
+                % Normalized photon energy
+                E0 = expdatas.E0; % MeV
+                k_over_E0 = xp / E0;
+                
+                [stat_err, syst_err] = errors_cross_sec(E0,xp,yp);
+              
+                hold on
+            
+                y_upper = yp + stat_err + syst_err;
+                y_lower = yp - stat_err - syst_err;
+                x_contour = [xp; flipud(xp)];           % goes forward then backward
+                y_contour = [y_upper; flipud(y_lower)]; % top then bottom
+                
+                h_fill = patch(x_contour, y_contour, [0.8 0.8 0.8], ...
+                           'EdgeColor', 'k', ...    
+                            'linewidth', 1, ...
+                           'FaceAlpha', 0, ...
+                           'DisplayName', ['Systematic, \theta=' num2str(theta_arr(ii)) ', n=' num2str(n_arr(ii))] ...
+                           ,'HandleVisibility', 'off');
+            
+                % Plot experimental points with statistical error bars
+                h_err = errorbar(xp, yp, stat_err, 'o', 'MarkerFaceColor', 'w', ...
+                'LineWidth', 1.2, 'MarkerSize', 8);
 
             set(gca, 'FontSize', 30);
             set(gca,'TickLabelInterpreter','latex')
@@ -201,27 +218,45 @@ for ind=1:numel(ind_exp)
             path = 'Fig_test';
             fig = figure;
             hold on
-                [xp, idx] = sort(sigma{theta_ind}(:,1));  % xp in MeV
-                yp = sigma{theta_ind}(idx, 2);            % cm² / MeV / sr
-                [stat_err, syst_err] = errors_cross_sec(E0/1000, xp, yp);
-        
-                % Convert: cm² / (MeV·sr) × MeV × 1e-24 → barn / sr
-                scale_y = 10^(-n_arr(theta_ind)) * xp * 1e27 /511 * 0.511; % / Z0^2;
-        
-                yp = yp .* scale_y;
-                stat_err = stat_err.* scale_y ;%.* scale_y;
-                syst_err = syst_err.* scale_y ;%.* scale_y;
 
-                h_fill = fill([xp; flipud(xp)], [yp + syst_err; flipud(yp - syst_err)], ...
-                    [0.8 0.8 0.8], 'EdgeColor', 'none', 'FaceAlpha', 0.5, ...
-                    'HandleVisibility', 'off');
-                hold on
-                h = errorbar(xp, yp, stat_err, 'ko', 'MarkerFaceColor', 'w', ...
-                    'LineWidth', 1.2, 'MarkerSize', 12, ...
-                    'HandleVisibility', 'off');
-    
-                hold on;
+            % Extract experimental data
+            [xp, idx] = sort(expdatas.sigma{theta_ind}(:,1));
+            yp = expdatas.sigma{theta_ind}(idx,2);
+        
+            xp = xp(:);
+            yp = yp(:);
+        
+            % Errors
+            [stat_err, syst_err] = errors_cross_sec(E0, xp, yp);
+            stat_err = stat_err(:);
+            syst_err = syst_err(:);
+        
+            % Scaling including photon energy
+            scale_y = 10^(-n_arr(theta_ind)) * xp * 1e27 / 511 * 0.511;
+            yp_scaled = yp .* scale_y;
+            stat_err_scaled = stat_err .* scale_y;
+            syst_err_scaled = syst_err .* scale_y;
+        
+            % Patch for total error
+            y_upper = yp_scaled + stat_err_scaled + syst_err_scaled;
+            y_lower = yp_scaled - stat_err_scaled - syst_err_scaled;
+            x_contour = [xp; flipud(xp)];        % goes forward then backward
+            y_contour = [y_upper; flipud(y_lower)]; % top then bottom
+        
+            h_fill = patch(x_contour, y_contour, [0.8 0.8 0.8], ...
+                       'EdgeColor', 'k', ...    % contour line color
+                        'linewidth', 1, ...
+                       'FaceAlpha', 0, ...
+                       'EdgeAlpha', 0.7, ...
+                       'DisplayName', ['Systematic, \theta=' num2str(theta_arr(theta_ind)) ', n=' num2str(n_arr(theta_ind))] ...
+                       ,'HandleVisibility', 'off');
+                        
+            
+            hold on; 
 
+            % Statistical error bars
+            errorbar(xp, yp_scaled, stat_err_scaled, 'ko', 'MarkerFaceColor','w', ...
+                'LineWidth',1.2, 'MarkerSize',8, 'HandleVisibility','on');
 
              plot(k_in(k_shift:end)/1000, normalization_fact.* squeeze(cs_BH(theta_ind,1,k_shift:end)), 'r-', 'DisplayName', 'BH', 'linewidth', 2);
              hold on;
@@ -241,7 +276,6 @@ for ind=1:numel(ind_exp)
             figname = ['dsigma_all_Z=' num2str(Z0),'E=',num2str(E0/1000), 'MeV_theta',num2str(theta_arr(theta_ind)),'_lin'];
             savefig(fig,[path,filesep,figname,'.fig']);
             exportgraphics(fig,[path,filesep,figname,'.eps'])
-            % close(fig);
     end
 
 end

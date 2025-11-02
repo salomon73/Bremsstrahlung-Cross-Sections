@@ -15,7 +15,7 @@
 %   Last update (28/10/2025)
 
 
-expdatas = exp_FEB_results(10);
+expdatas = exp_FEB_results(19);
 n_arr = expdatas.n;
 theta_arr = expdatas.theta;
 figure;

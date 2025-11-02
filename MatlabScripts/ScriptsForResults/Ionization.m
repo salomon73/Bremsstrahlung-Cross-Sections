@@ -22,7 +22,7 @@
 % =========================================================================
 
 nk = 40;                % Number of photon energy points
-E0 = 4540;               % Initial energy of incident electron (keV)
+E0 = 1700;               % Initial energy of incident electron (keV)
 Z0 = 79;                 % Atomic number of gold
 theta_arr = [0,1.45,3.01,6.03];          % Observation angles in degrees
 params = struct;  
