@@ -10,7 +10,7 @@ This repository contains the scripts and data accompanying the submitted paper:
 
 > **S. Guinchard, Y. Savoye-Peysson, J. Decker**  
 > *Screened Thin-Target Bremsstrahlung with Partially Ionized High-Z Species.*
-> *arXiV* to be added here
+> [arXiV](https://doi.org/10.48550/arXiv.2511.02098) 
 
 It provides numerical **MATLAB** implementations for evaluating and plotting bremsstrahlung cross sections, including **screening corrections** based on a multi-Yukawa potential model.  
 All figures from the publication can be reproduced from the scripts provided.
